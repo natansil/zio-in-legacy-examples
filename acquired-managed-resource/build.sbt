@@ -13,9 +13,11 @@ scalaVersion := "2.13.1"
 
 // It's possible to define many kinds of settings, such as:
 
-name := "hello-world"
+name := "acquired-managed-resource"
 organization := "ch.epfl.scala"
 version := "1.0"
+
+lazy val springVersion = "1.5.3.RELEASE"
 
 // Note, it's not required for you to define these three settings. These are
 // mostly only necessary if you intend to publish your library's binaries on a
@@ -28,6 +30,7 @@ version := "1.0"
 libraryDependencies ++= Seq(
     "org.scala-lang.modules" %% "scala-parser-combinators" % "1.1.2",
     "dev.zio" %% "zio" % "1.0.3",
+    "org.springframework.boot" % "spring-boot-starter" % springVersion,
 )
 
 // Here, `libraryDependencies` is a set of dependencies, and by using `+=`,

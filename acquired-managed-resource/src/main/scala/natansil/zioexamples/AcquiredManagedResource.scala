@@ -7,7 +7,7 @@ import zio.duration.{Duration, durationInt}
 import scala.concurrent.TimeoutException
 
 case class AcquiredManagedResource[T](resource: T, onRelease: UIO[Unit], runtime: zio.Runtime[Any]) {
-  def release(): Unit = runtime.unsafeRunTask(onRelease)
+  def release(): UIO[Unit] = onRelease
 }
 
 object AcquiredManagedResource {
