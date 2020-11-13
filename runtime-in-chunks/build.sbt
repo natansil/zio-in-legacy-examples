@@ -28,14 +28,14 @@ version := "1.0"
 libraryDependencies ++= Seq(
     "org.scala-lang.modules" %% "scala-parser-combinators" % "1.1.2",
     "dev.zio" %% "zio" % "1.0.3",
-    "com.wix" %% "greyhound-future" % "0.1.3"
+    "com.wix" %% "greyhound-future" % "0.1.3",
+    "io.grpc" % "grpc-netty" % "1.33.1",
+    "com.thesamet.scalapb" %% "scalapb-runtime-grpc" % "0.11.0-M3"
 )
 
-// Here, `libraryDependencies` is a set of dependencies, and by using `+=`,
-// we're adding the scala-parser-combinators dependency to the set of dependencies
-// that sbt will go and fetch when it starts up.
-// Now, in any Scala file, you can import classes, objects, etc., from
-// scala-parser-combinators with a regular import.
+PB.targets in Compile := Seq(
+  scalapb.gen() -> (sourceManaged in Compile).value / "scalapb"
+)
 
 // TIP: To find the "dependency" that you need to add to the
 // `libraryDependencies` set, which in the above example looks like this:

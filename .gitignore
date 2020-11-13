@@ -2,6 +2,5 @@
 .metals
 .bloop
 .metals/
-project/
 target/
 *.log
