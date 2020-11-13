@@ -1,3 +1,5 @@
+package runtime.in.chunks
+
 import scala.collection.mutable.ListBuffer
 import scala.concurrent.Await
 import scala.concurrent.ExecutionContext
@@ -26,6 +28,8 @@ import zio.RIO
 import zio.clock.Clock
 import zio.{Promise => ZPromise}
 
+import java.util.logging.Logger
+
 object Main extends App {
 
   // TODO: add grpcService as well!!!!!!!!!!!!!
@@ -38,7 +42,14 @@ object Main extends App {
     override def handle(record: ConsumerRecord[Int, String])(implicit ec: ExecutionContext): Future[Any] =
       Runtime.unsafeRunToFuture(new ZCustomHandler().handle(record))
   })
-  consumersBuilder.build
+
+  val server = new HelloWorldServer(ExecutionContext.global)
+  server.start()
+  server.blockUntilShutdown()
+
+
+
+  // consumersBuilder.build
 
   def consumerBuilderWith(
       recordHandler: RecordHandler[Int, String]
