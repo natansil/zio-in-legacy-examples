@@ -19,6 +19,7 @@ import com.wixpress.dst.greyhound.future.ContextDecoder.aHeaderContextDecoder
 import com.wixpress.dst.greyhound.future.ContextEncoder.aHeaderContextEncoder
 import com.wixpress.dst.greyhound.future.ErrorHandler.anErrorHandler
 import com.wixpress.dst.greyhound.future.GreyhoundConsumer._
+import com.wixpress.dst.greyhound.future.GreyhoundProducerBuilder
 import com.wixpress.dst.greyhound.future._
 import zio.BootstrapRuntime
 import zio.Task
@@ -31,23 +32,25 @@ import zio.{Promise => ZPromise}
 import java.util.logging.Logger
 
 object Main extends App {
-
-  // TODO: add grpcService as well!!!!!!!!!!!!!
-
+  implicit val ec = ExecutionContext.global
   println("Hello, World!")
 
-  val promise = Promise[ConsumerRecord[Int, String]]
+  // val promise = Promise[ConsumerRecord[Int, String]]
 
   val consumersBuilder = consumerBuilderWith(new RecordHandler[Int, String] {
     override def handle(record: ConsumerRecord[Int, String])(implicit ec: ExecutionContext): Future[Any] =
       Runtime.unsafeRunToFuture(new ZCustomHandler().handle(record))
   })
 
-  val server = new HelloWorldServer(ExecutionContext.global)
+  val config = GreyhoundConfig("localhost:9092")
+  val _server = for {
+    producer <- GreyhoundProducerBuilder(config).build
+    server = new OrdersServer(ec ,producer)
+  } yield server
+
+  val server = Await.result(_server, 2.seconds)
   server.start()
   server.blockUntilShutdown()
-
-
 
   // consumersBuilder.build
 

@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package com.example;
+
+service Orders {
+  rpc ProduceOrder (ProduceOrderRequest) returns (ProduceOrderReply) {}
+}
+
+message ProduceOrderRequest {
+  string customerId = 1;
+  string itemId = 2;
+  int32 quantity = 3;
+}
+
+message ProduceOrderReply {
+}

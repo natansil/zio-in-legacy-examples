@@ -1,25 +1,28 @@
 package runtime.in.chunks
 
-import com.example.protos.hello.GreeterGrpc._
-import com.example.protos.hello._
+import com.example.orders.OrdersGrpc._
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext
+import com.wixpress.dst.greyhound.core._
+
 
 import io.grpc.{Server, ServerBuilder}
 import io.grpc.protobuf.services.ProtoReflectionService
-import com.example.protos.hello.{GreeterGrpc, HelloRequest, HelloReply}
+import com.example.orders.{OrdersGrpc, ProduceOrderRequest, ProduceOrderReply}
+import com.wixpress.dst.greyhound.future.GreyhoundProducer
 
 import scala.concurrent.{ExecutionContext, Future}
+import com.wixpress.dst.greyhound.core.producer.ProducerRecord
 
-class HelloWorldServer(executionContext: ExecutionContext) { self =>
+class OrdersServer(executionContext: ExecutionContext, producer: GreyhoundProducer) { self =>
   private[this] var server: Server = null
   private val port = 50051
 
   def start(): Unit = {
     server = ServerBuilder.forPort(port)
-    .addService(GreeterGrpc.bindService(new GreeterImpl, executionContext))
+    .addService(OrdersGrpc.bindService(new OrdersImpl, executionContext))
     .addService(ProtoReflectionService.newInstance()).build.start
-    println("Server started, listening on " + port)
+    println("Orders Server started, listening on " + port)
     sys.addShutdownHook {
       System.err.println("*** shutting down gRPC server since JVM is shutting down")
       self.stop()
@@ -40,10 +43,10 @@ class HelloWorldServer(executionContext: ExecutionContext) { self =>
     }
   }
 
-  private class GreeterImpl extends GreeterGrpc.Greeter {
-    override def sayHello(req: HelloRequest) = {
-      val reply = HelloReply(message = "Hello " + req.name)
-      Future.successful(reply)
+  private class OrdersImpl extends OrdersGrpc.Orders {
+    override def produceOrder(req: ProduceOrderRequest) = {
+      producer.produce(ProducerRecord("orders", req.customerId), Serdes.StringSerde, Serdes.StringSerde)
+              .map(_ => ProduceOrderReply())(executionContext)
     }
   }
 
