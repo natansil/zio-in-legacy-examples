@@ -26,47 +26,48 @@ import zio.Task
 import zio.UIO
 import zio.URIO
 import zio.RIO
-import zio.clock.Clock
+import zio.console
+import zio.console._
 import zio.{Promise => ZPromise}
 
 import java.util.logging.Logger
 
 object Main extends App {
+  val kafkaPort = 9092
+  val greyhoundConfig = GreyhoundConfig(s"localhost:$kafkaPort")
+
   implicit val ec = ExecutionContext.global
   println("Hello, World!")
 
-  // val promise = Promise[ConsumerRecord[Int, String]]
-
-  val consumersBuilder = consumerBuilderWith(new RecordHandler[Int, String] {
-    override def handle(record: ConsumerRecord[Int, String])(implicit ec: ExecutionContext): Future[Any] =
+  val consumersBuilder = consumerBuilderWith(new RecordHandler[String, String] {
+    override def handle(record: ConsumerRecord[String, String])(implicit ec: ExecutionContext): Future[Any] =
       Runtime.unsafeRunToFuture(new ZCustomHandler().handle(record))
   })
 
-  val config = GreyhoundConfig("localhost:9092")
+  
+  
   val _server = for {
-    producer <- GreyhoundProducerBuilder(config).build
+    consumer <- consumersBuilder.build
+    producer <- GreyhoundProducerBuilder(greyhoundConfig).build
     server = new OrdersServer(ec ,producer)
   } yield server
 
-  val server = Await.result(_server, 2.seconds)
+  val server = Await.result(_server, 10.seconds)
   server.start()
   server.blockUntilShutdown()
 
-  // consumersBuilder.build
 
   def consumerBuilderWith(
-      recordHandler: RecordHandler[Int, String]
+      recordHandler: RecordHandler[String, String]
   ): GreyhoundConsumersBuilder = {
-    val config = GreyhoundConfig("localhost:6667")
-
-    GreyhoundConsumersBuilder(config)
+    GreyhoundConsumersBuilder(greyhoundConfig)
       .withConsumer(
         GreyhoundConsumer(
-          initialTopics = Set("some-topic"),
-          group = "group-1",
-          clientId = "client-id-1",
+          initialTopics = Set("orders"),
+          group = "group",
+          clientId = "client-id",
           handle = aRecordHandler { recordHandler },
-          keyDeserializer = Serdes.IntSerde,
+          keyDeserializer = Serdes.StringSerde,
           valueDeserializer = Serdes.StringSerde
         )
       )
@@ -74,14 +75,14 @@ object Main extends App {
 }
 
 class CustomHandler() {
-  def handle(record: ConsumerRecord[Int, String])(implicit ec: ExecutionContext): Future[Any] = {
+  def handle(record: ConsumerRecord[String, String])(implicit ec: ExecutionContext): Future[Any] = {
     ???
   }
 }
 
 class ZCustomHandler() {
-  def handle(record: ConsumerRecord[Int, String]): RIO[Clock, Unit] = {
-    ???
+  def handle(record: ConsumerRecord[String, String]): RIO[Console, Unit] = {
+    console.putStrLn(s">>>> $record")
   }
 }
 
