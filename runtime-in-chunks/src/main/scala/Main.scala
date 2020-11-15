@@ -37,14 +37,11 @@ object Main extends App {
   val greyhoundConfig = GreyhoundConfig(s"localhost:$kafkaPort")
 
   implicit val ec = ExecutionContext.global
-  println("Hello, World!")
 
   val consumersBuilder = consumerBuilderWith(new RecordHandler[String, String] {
     override def handle(record: ConsumerRecord[String, String])(implicit ec: ExecutionContext): Future[Any] =
-      Runtime.unsafeRunToFuture(new ZCustomHandler().handle(record))
-  })
-
-  
+      new CustomHandler().handle(record) //ZCustom
+  })  
   
   val _server = for {
     consumer <- consumersBuilder.build
@@ -76,9 +73,11 @@ object Main extends App {
 
 class CustomHandler() {
   def handle(record: ConsumerRecord[String, String])(implicit ec: ExecutionContext): Future[Any] = {
-    ???
+    Future.successful(println(s">>>> $record"))
   }
 }
+
+////// ZIO additions //////
 
 class ZCustomHandler() {
   def handle(record: ConsumerRecord[String, String]): RIO[Console, Unit] = {
