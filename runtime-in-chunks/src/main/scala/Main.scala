@@ -38,7 +38,7 @@ object Main extends App {
 
   implicit val ec = ExecutionContext.global
 
-  val consumersBuilder = consumerBuilderWith(new RecordHandler[String, String] {
+  val consumersBuilder = Consumer.consumerBuilderWith(greyhoundConfig, new RecordHandler[String, String] {
     override def handle(record: ConsumerRecord[String, String])(implicit ec: ExecutionContext): Future[Any] =
       new CustomHandler().handle(record) //ZCustom snippet
   })  
@@ -53,41 +53,6 @@ object Main extends App {
   val server = Await.result(_server, 10.seconds)
   server.start()
   server.blockUntilShutdown()
-
-
-  def consumerBuilderWith(
-      recordHandler: RecordHandler[String, String]
-  ): GreyhoundConsumersBuilder = {
-    GreyhoundConsumersBuilder(greyhoundConfig)
-      .withConsumer(
-        GreyhoundConsumer(
-          initialTopics = Set("orders"),
-          group = "group",
-          clientId = "client-id",
-          handle = aRecordHandler { recordHandler },
-          keyDeserializer = Serdes.StringSerde,
-          valueDeserializer = Serdes.StringSerde
-        )
-      )
-  }
-}
-
-class CustomHandler() {
-  def handle(record: ConsumerRecord[String, String])(implicit ec: ExecutionContext): Future[Any] = {
-    Future.successful(println(s">>>> $record"))
-  }
-}
-
-////// ZIO additions //////
-
-class ZCustomHandler(ordersCache:  zio.Ref[Map[String, Order]]) {
-  def handle(record: ConsumerRecord[String, String]): RIO[Console, Unit] = {
-    for {
-      orders <- ordersCache.get
-      order = orders.get(record.value)
-      _ <- console.putStrLn(s">>>> r: $record. o: $order")
-    } yield ()
-  }
 }
 
 object Runtime extends BootstrapRuntime
