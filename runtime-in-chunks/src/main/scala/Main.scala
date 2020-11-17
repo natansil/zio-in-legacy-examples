@@ -40,13 +40,14 @@ object Main extends App {
 
   val consumersBuilder = consumerBuilderWith(new RecordHandler[String, String] {
     override def handle(record: ConsumerRecord[String, String])(implicit ec: ExecutionContext): Future[Any] =
-      new CustomHandler().handle(record) //ZCustom
+      new CustomHandler().handle(record) //ZCustom snippet
   })  
   
   val _server = for {
     consumer <- consumersBuilder.build
+    _ = println(">>>> consumer started")
     producer <- GreyhoundProducerBuilder(greyhoundConfig).build
-    server = new OrdersServer(ec ,producer)
+    server = new OrdersServer(ec ,producer, InMemoryOrdersDao)
   } yield server
 
   val server = Await.result(_server, 10.seconds)

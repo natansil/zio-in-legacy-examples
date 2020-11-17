@@ -3,14 +3,27 @@ syntax = "proto3";
 package com.example;
 
 service Orders {
-  rpc ProduceOrder (ProduceOrderRequest) returns (ProduceOrderReply) {}
+  rpc CreateOrder (CreateOrderRequest) returns (CreateOrderReply) {}
+  rpc GetOrder (GetOrderRequest) returns (GetOrderReply) {}
 }
 
-message ProduceOrderRequest {
+message CreateOrderRequest {
   string customerId = 1;
   string itemId = 2;
   int32 quantity = 3;
 }
 
-message ProduceOrderReply {
+message CreateOrderReply {
+  string orderId = 1;
+}
+
+message GetOrderRequest {
+  string orderId = 1;
+}
+
+message GetOrderReply {
+  string orderId = 1;
+  string customerId = 2;
+  string itemId = 3;
+  int32 quantity = 4;
 }
