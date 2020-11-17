@@ -53,27 +53,16 @@ class OrdersServer(executionContext: ExecutionContext,
     override def createOrder(req: CreateOrderRequest) = {
       //zCreateOrder snippet
       for {
-        _ <- ordersDao.createOrder(req)
-        _ <- producer.produce(ProducerRecord("orders", req.customerId), Serdes.StringSerde, Serdes.StringSerde)
+        orderId <- ordersDao.createOrder(req)
+        _ <- producer.produce(ProducerRecord("orders", orderId), Serdes.StringSerde, Serdes.StringSerde)
       } yield CreateOrderReply()
     }
+
     override  def getOrder(request: GetOrderRequest): scala.concurrent.Future[GetOrderReply] = 
       //zGetOrder snippet
-      ordersDao.getOrder(request)
+      ordersDao.getOrder(request).map(Order.toReply)
   }
 
-}
-
-trait OrdersDao {
-  def createOrder(req: CreateOrderRequest): Future[Unit]
-  def getOrder(req: GetOrderRequest): Future[GetOrderReply]
-}
-
-object InMemoryOrdersDao extends OrdersDao {
-
-  override def getOrder(req: GetOrderRequest): Future[GetOrderReply] = Future.successful(GetOrderReply())
-
-  override def createOrder(req: CreateOrderRequest): Future[Unit] = Future.unit
 }
 
 //// ZIO helpers ////
