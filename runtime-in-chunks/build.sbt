@@ -30,6 +30,7 @@ libraryDependencies ++= Seq(
     "dev.zio" %% "zio" % "1.0.3",
     "com.wix" %% "greyhound-future" % "0.1.3",
     "io.grpc" % "grpc-netty" % "1.33.1",
+    "io.grpc" % "grpc-services" % "1.33.1",
     "com.thesamet.scalapb" %% "scalapb-runtime-grpc" % "0.11.0-M3"
 )
 
