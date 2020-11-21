@@ -55,14 +55,13 @@ object Main extends App {
       producerR <- Producer.make(ProducerConfig(bootstrapServer)).reserve
       producer <- producerR.acquire
       
-      _server = for {
+      server <- ZIO.fromFuture(_ => for {
         consumer <- consumersBuilder.build
         _ = println(">>>> consumer started")
         server = new OrdersServer(ec, producer, ZInMemoryOrdersDao, ordersRef)
-      } yield server
+      } yield server)
 
-      server = Await.result(_server, 10.seconds)
-      _ = server.start()
+      _ <- ZIO.effect(server.start())
       _ <- effectBlocking(server.blockUntilShutdown())
       _ = producerR.release
     } yield ()

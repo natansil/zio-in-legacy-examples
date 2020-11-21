@@ -53,15 +53,13 @@ object Main extends App {
       })  
       //zioProducer snippet
       
-      _server = for {
+      server <- ZIO.fromFuture(_ => for {
         consumer <- consumersBuilder.build
         _ = println(">>>> consumer started")
         producer <- GreyhoundProducerBuilder(greyhoundConfig).build
         server = new OrdersServer(ec, producer, InMemoryOrdersDao, ordersRef) // ZInMemoryOrdersDao
-      } yield server
-
-      server = Await.result(_server, 10.seconds)
-      _ = server.start()
+      } yield server)
+      _ <- ZIO.effect(server.start())
       _ <- effectBlocking(server.blockUntilShutdown())
     } yield ()
   }
