@@ -1,7 +1,22 @@
-package runtime.in.chunks
+package functional.wrappers
 import com.example.orders.{OrdersGrpc, CreateOrderRequest, CreateOrderReply, GetOrderRequest, GetOrderReply}
 import scala.concurrent.{ExecutionContext, Future}
 import scala.collection.mutable
+import zio.Task
+import zio.ZIO
+
+trait ZOrdersDao {
+  def createOrder(req: CreateOrderRequest): Task[String]
+  def getOrder(orderId: String): Task[Order]
+}
+
+object ZInMemoryOrdersDao extends ZOrdersDao {
+
+  override def createOrder(req: CreateOrderRequest): zio.Task[String] = ZIO.fromFuture(_ => InMemoryOrdersDao.createOrder(req))
+
+  override def getOrder(orderId: String): zio.Task[Order] = ZIO.fromFuture(_ => InMemoryOrdersDao.getOrder(orderId))
+
+}
 
 trait OrdersDao {
   def createOrder(req: CreateOrderRequest): Future[String]

@@ -1,4 +1,4 @@
-package runtime.in.chunks
+package functional.wrappers
 
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future

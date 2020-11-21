@@ -1,4 +1,4 @@
-package runtime.in.chunks
+package functional.wrappers
 
 import scala.collection.mutable.ListBuffer
 import scala.concurrent.Await
@@ -53,7 +53,7 @@ object Main extends App {
         consumer <- consumersBuilder.build
         _ = println(">>>> consumer started")
         producer <- GreyhoundProducerBuilder(greyhoundConfig).build
-        server = new OrdersServer(ec ,producer, InMemoryOrdersDao, ordersRef)
+        server = new OrdersServer(ec ,producer, InMemoryOrdersDao, ordersRef) // ZInMemoryOrdersDao
       } yield server
 
       server = Await.result(_server, 10.seconds)

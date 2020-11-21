@@ -1,4 +1,4 @@
-package runtime.in.chunks
+package functional.wrappers
 
 import com.example.orders.OrdersGrpc._
 import scala.concurrent.Future
@@ -18,7 +18,7 @@ import zio.ZIO
 
 class OrdersServer(executionContext: ExecutionContext, 
                    producer: GreyhoundProducer,
-                   ordersDao: OrdersDao,
+                   ordersDao: OrdersDao, // ZOrdersDao
                    ordersCache:  zio.Ref[Map[String, Order]]
                    ) { self =>
   private[this] var server: Server = null
