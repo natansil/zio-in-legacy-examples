@@ -32,6 +32,7 @@ import zio.console._
 import zio.{Promise => ZPromise}
 import zio.ZIO
 import zio.ZEnv
+import zio.blocking.{Blocking, effectBlocking}
 
 import java.util.logging.Logger
 
@@ -61,7 +62,7 @@ object Main extends App {
 
       server = Await.result(_server, 10.seconds)
       _ = server.start()
-      _ = server.blockUntilShutdown()
+      _ <- effectBlocking(server.blockUntilShutdown())
     } yield ()
   }
 }
