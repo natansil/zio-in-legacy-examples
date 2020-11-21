@@ -10,14 +10,16 @@ import io.grpc.{Server, ServerBuilder}
 import io.grpc.protobuf.services.ProtoReflectionService
 import com.example.orders.{OrdersGrpc, CreateOrderRequest, CreateOrderReply, GetOrderRequest, GetOrderReply}
 import com.wixpress.dst.greyhound.future.GreyhoundProducer
+import com.wixpress.dst.greyhound.core.producer.Producer
 
 import scala.concurrent.{ExecutionContext, Future}
 import com.wixpress.dst.greyhound.core.producer.ProducerRecord
-import zio.Task
 import zio.ZIO
+import zio.IO
+import zio.RIO
 
 class OrdersServer(executionContext: ExecutionContext, 
-                   producer: GreyhoundProducer,
+                   producer: GreyhoundProducer, //Producer.Producer
                    ordersDao: OrdersDao, // ZOrdersDao
                    ordersCache:  zio.Ref[Map[String, Order]]
                    ) { self =>
@@ -52,7 +54,7 @@ class OrdersServer(executionContext: ExecutionContext,
   private class OrdersImpl extends OrdersGrpc.Orders {
     implicit val _executionContext = executionContext
     override def createOrder(req: CreateOrderRequest) = {
-      LegacyRuntime.fromTask {
+      LegacyRuntime.fromZIO {
         for {
           orderId <- ZIO.fromFuture{_ => ordersDao.createOrder(req) }
           order <- ZIO.fromFuture{_ => ordersDao.getOrder(orderId)}
@@ -63,14 +65,14 @@ class OrdersServer(executionContext: ExecutionContext,
     }
 
     override  def getOrder(request: GetOrderRequest): scala.concurrent.Future[GetOrderReply] = 
-      LegacyRuntime.fromTask{ ZIO.fromFuture{_ => ordersDao.getOrder(request.orderId)}.map(Order.toReply) }
+      LegacyRuntime.fromZIO{ ZIO.fromFuture{_ => ordersDao.getOrder(request.orderId)}.map(Order.toReply) }
   }
 
 }
 
 //// ZIO helpers ////
 object LegacyRuntime {
-  def fromTask[Res](body: => Task[Res]): Future[Res] = {
+  def fromZIO[Res](body: => RIO[zio.ZEnv, Res]): Future[Res] = {
     Runtime.unsafeRunToFuture(body)
   }
 }

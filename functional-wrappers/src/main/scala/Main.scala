@@ -15,6 +15,7 @@ import com.wixpress.dst.greyhound.core.consumer.EventLoopMetric.StoppingEventLoo
 import com.wixpress.dst.greyhound.core.consumer.domain.ConsumerRecord
 import com.wixpress.dst.greyhound.core.metrics.GreyhoundMetric
 import com.wixpress.dst.greyhound.core.producer.ProducerRecord
+import com.wixpress.dst.greyhound.core.producer._
 import com.wixpress.dst.greyhound.future.ContextDecoder.aHeaderContextDecoder
 import com.wixpress.dst.greyhound.future.ContextEncoder.aHeaderContextEncoder
 import com.wixpress.dst.greyhound.future.ErrorHandler.anErrorHandler
@@ -36,7 +37,8 @@ import java.util.logging.Logger
 
 object Main extends App {
   val kafkaPort = 9092
-  val greyhoundConfig = GreyhoundConfig(s"localhost:$kafkaPort")
+  val bootstrapServer = s"localhost:$kafkaPort"
+  val greyhoundConfig = GreyhoundConfig(bootstrapServer)
 
   implicit val ec = ExecutionContext.global
 
@@ -48,12 +50,13 @@ object Main extends App {
         override def handle(record: ConsumerRecord[String, String])(implicit ec: ExecutionContext): Future[Any] =
           runtime.unsafeRunToFuture(new ZCustomHandler(ordersRef).handle(record))
       })  
+      //zioProducer snippet
       
       _server = for {
         consumer <- consumersBuilder.build
         _ = println(">>>> consumer started")
         producer <- GreyhoundProducerBuilder(greyhoundConfig).build
-        server = new OrdersServer(ec ,producer, InMemoryOrdersDao, ordersRef) // ZInMemoryOrdersDao
+        server = new OrdersServer(ec, producer, InMemoryOrdersDao, ordersRef) // ZInMemoryOrdersDao
       } yield server
 
       server = Await.result(_server, 10.seconds)
