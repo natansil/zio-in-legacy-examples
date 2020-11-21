@@ -29,6 +29,8 @@ import zio.RIO
 import zio.console
 import zio.console._
 import zio.{Promise => ZPromise}
+import zio.ZIO
+import zio.ZEnv
 
 import java.util.logging.Logger
 
@@ -38,25 +40,31 @@ object Main extends App {
 
   implicit val ec = ExecutionContext.global
 
-  val consumersBuilder = Consumer.consumerBuilderWith(greyhoundConfig, new RecordHandler[String, String] {
-    override def handle(record: ConsumerRecord[String, String])(implicit ec: ExecutionContext): Future[Any] =
-      new CustomHandler().handle(record) //ZCustom snippet
-  })  
-  
-  val _server = for {
-    consumer <- consumersBuilder.build
-    _ = println(">>>> consumer started")
-    producer <- GreyhoundProducerBuilder(greyhoundConfig).build
-    server = new OrdersServer(ec ,producer, InMemoryOrdersDao)
-  } yield server
+  Runtime.unsafeRun {
+    for {
+      ordersRef <- zio.Ref.make[Map[String, Order]](Map.empty)
+      runtime <- ZIO.runtime[ZEnv]
+      consumersBuilder = Consumer.consumerBuilderWith(greyhoundConfig, new RecordHandler[String, String] {
+        override def handle(record: ConsumerRecord[String, String])(implicit ec: ExecutionContext): Future[Any] =
+          // new CustomHandler().handle(record) //ZCustom snippet
+          runtime.unsafeRunToFuture(new ZCustomHandler(ordersRef).handle(record))
+      })  
+      
+      _server = for {
+        consumer <- consumersBuilder.build
+        _ = println(">>>> consumer started")
+        producer <- GreyhoundProducerBuilder(greyhoundConfig).build
+        server = new OrdersServer(ec ,producer, InMemoryOrdersDao, ordersRef)
+      } yield server
 
-  val server = Await.result(_server, 10.seconds)
-  server.start()
-  server.blockUntilShutdown()
+      server = Await.result(_server, 10.seconds)
+      _ = server.start()
+      _ = server.blockUntilShutdown()
+    } yield ()
+  }
 }
 
 object Runtime extends BootstrapRuntime
-
 
 //// ZIO stuff ////
 // ordersRef <- zio.Ref.make[Map[String, Order]](Map.empty)

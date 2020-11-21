@@ -18,7 +18,8 @@ import zio.ZIO
 
 class OrdersServer(executionContext: ExecutionContext, 
                    producer: GreyhoundProducer,
-                   ordersDao: OrdersDao
+                   ordersDao: OrdersDao,
+                   ordersCache:  zio.Ref[Map[String, Order]]
                    ) { self =>
   private[this] var server: Server = null
   private val port = 50051
@@ -52,15 +53,20 @@ class OrdersServer(executionContext: ExecutionContext,
     implicit val _executionContext = executionContext
     override def createOrder(req: CreateOrderRequest) = {
       //zCreateOrder snippet
-      for {
-        orderId <- ordersDao.createOrder(req)
-        _ <- producer.produce(ProducerRecord("orders", orderId), Serdes.StringSerde, Serdes.StringSerde)
-      } yield CreateOrderReply()
+      LegacyRuntime.fromTask {
+        for {
+          orderId <- ZIO.fromFuture{_ => ordersDao.createOrder(req) }
+          order <- ZIO.fromFuture{_ => ordersDao.getOrder(orderId)}
+          _ <- ordersCache.update(_.updated(orderId, order))
+          _ <- ZIO.fromFuture{_ => producer.produce(ProducerRecord("orders", orderId), Serdes.StringSerde, Serdes.StringSerde)}
+        } yield CreateOrderReply()
+      }
     }
 
     override  def getOrder(request: GetOrderRequest): scala.concurrent.Future[GetOrderReply] = 
       //zGetOrder snippet
-      ordersDao.getOrder(request.orderId).map(Order.toReply)
+      // ordersDao.getOrder(request.orderId).map(Order.toReply)
+      LegacyRuntime.fromTask{ ZIO.fromFuture{_ => ordersDao.getOrder(request.orderId)}.map(Order.toReply) }
   }
 
 }
