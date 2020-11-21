@@ -48,12 +48,13 @@ class CustomHandler() {
 
 ////// ZIO additions //////
 
-class ZCustomHandler(ordersCache:  zio.Ref[Map[String, Order]]) {
+class ZCustomHandler(ordersCache: zio.Ref[Map[String, Order]] = null) {
   def handle(record: ConsumerRecord[String, String]): RIO[Console, Unit] = {
     for {
-      orders <- ordersCache.get
-      order = orders.get(record.value)
-      _ <- console.putStrLn(s">>>> r: $record. o: $order")
+      // orders <- ordersCache.get
+      // order = orders.get(record.value)
+      // _ <- console.putStrLn(s">>>> r: $record. o: $order")
+      _ <- console.putStrLn(s">>>> r: $record")
     } yield ()
   }
 }
