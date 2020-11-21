@@ -60,3 +60,4 @@ object Runtime extends BootstrapRuntime
 
 //// ZIO stuff ////
 // ordersRef <- zio.Ref.make[Map[String, Order]](Map.empty)
+// runtime <- ZIO.runtime[ZEnv]
