@@ -56,3 +56,7 @@ object Main extends App {
 }
 
 object Runtime extends BootstrapRuntime
+
+
+//// ZIO stuff ////
+// ordersRef <- zio.Ref.make[Map[String, Order]](Map.empty)
