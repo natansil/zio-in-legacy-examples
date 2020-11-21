@@ -1,6 +1,7 @@
 package runtime.in.chunks
 import com.example.orders.{OrdersGrpc, CreateOrderRequest, CreateOrderReply, GetOrderRequest, GetOrderReply}
 import scala.concurrent.{ExecutionContext, Future}
+import scala.collection.mutable
 
 trait OrdersDao {
   def createOrder(req: CreateOrderRequest): Future[String]
@@ -8,9 +9,17 @@ trait OrdersDao {
 }
 
 object InMemoryOrdersDao extends OrdersDao {
-  override def getOrder(orderId: String): Future[Order] = Future.successful(Order())
+  val orders = mutable.Map.empty[String, Order] 
 
-  override def createOrder(req: CreateOrderRequest): Future[String] = Future.successful(java.util.UUID.randomUUID.toString)
+  override def getOrder(orderId: String): Future[Order] = 
+    orders.get(orderId).map(Future.successful).getOrElse(Future.failed(new RuntimeException("missing order")))
+
+  override def createOrder(req: CreateOrderRequest): Future[String] = {
+    val orderId = java.util.UUID.randomUUID.toString
+    orders.put(orderId, Order.fromRequest(orderId, req))
+    println(s">>>> order added to DAO. orders: $orders")
+    Future.successful(orderId)
+  }
 }
 
 case class Order(orderId: String = "",
