@@ -60,7 +60,7 @@ class OrdersServer(executionContext: ExecutionContext,
 
     override  def getOrder(request: GetOrderRequest): scala.concurrent.Future[GetOrderReply] = 
       //zGetOrder snippet
-      ordersDao.getOrder(request).map(Order.toReply)
+      ordersDao.getOrder(request.orderId).map(Order.toReply)
   }
 
 }

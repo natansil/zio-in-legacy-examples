@@ -13,7 +13,7 @@ scalaVersion := "2.12.12"
 
 // It's possible to define many kinds of settings, such as:
 
-name := "hello-world"
+name := "runtime-in-chunks"
 organization := "ch.epfl.scala"
 version := "1.0"
 

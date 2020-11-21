@@ -4,11 +4,11 @@ import scala.concurrent.{ExecutionContext, Future}
 
 trait OrdersDao {
   def createOrder(req: CreateOrderRequest): Future[String]
-  def getOrder(req: GetOrderRequest): Future[Order]
+  def getOrder(orderId: String): Future[Order]
 }
 
 object InMemoryOrdersDao extends OrdersDao {
-  override def getOrder(req: GetOrderRequest): Future[Order] = Future.successful(Order())
+  override def getOrder(orderId: String): Future[Order] = Future.successful(Order())
 
   override def createOrder(req: CreateOrderRequest): Future[String] = Future.successful(java.util.UUID.randomUUID.toString)
 }
