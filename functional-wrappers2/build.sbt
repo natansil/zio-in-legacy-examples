@@ -35,7 +35,8 @@ libraryDependencies ++= Seq(
 )
 
 PB.targets in Compile := Seq(
-  scalapb.gen() -> (sourceManaged in Compile).value / "scalapb"
+  scalapb.gen(grpc = true) -> (sourceManaged in Compile).value / "scalapb",
+  scalapb.zio_grpc.ZioCodeGenerator -> (sourceManaged in Compile).value,
 )
 
 // TIP: To find the "dependency" that you need to add to the

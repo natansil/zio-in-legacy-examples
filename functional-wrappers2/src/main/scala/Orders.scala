@@ -1,6 +1,8 @@
 package functional.wrappers2
 
 import com.example.orders.OrdersGrpc._
+import com.example.orders.ZioOrders
+import com.example.orders.ZioOrders.ZOrders
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext
 import com.wixpress.dst.greyhound.core._
@@ -17,6 +19,7 @@ import com.wixpress.dst.greyhound.core.producer.ProducerRecord
 import zio.ZIO
 import zio.IO
 import zio.RIO
+import zio.blocking.Blocking
 
 class OrdersServer(executionContext: ExecutionContext, 
                    producer: Producer.Producer,
@@ -76,3 +79,21 @@ object LegacyRuntime {
     Runtime.unsafeRunToFuture(body)
   }
 }
+
+
+
+// class ZOrdersServer(producer: Producer.Producer,
+//                    ordersDao: ZOrdersDao,
+//                    ordersCache: zio.Ref[Map[String, Order]]) extends ZOrders[Blocking, Any] {
+//     override def createOrder(req: CreateOrderRequest) = {
+//         (for {
+//           orderId <- ordersDao.createOrder(req)
+//           order <- ordersDao.getOrder(orderId)
+//           _ <- ordersCache.update(_.updated(orderId, order))
+//           _ <- producer.produce(ProducerRecord("orders", orderId), Serdes.StringSerde, Serdes.StringSerde)
+//         } yield CreateOrderReply()).catchAll(ex => ZIO.fail(io.grpc.Status.INTERNAL))
+//     }
+
+//     override  def getOrder(request: GetOrderRequest) = 
+//       ordersDao.getOrder(request.orderId).map(Order.toReply).catchAll(ex => ZIO.fail(io.grpc.Status.INTERNAL))
+// }
