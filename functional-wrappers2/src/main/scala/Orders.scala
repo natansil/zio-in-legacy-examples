@@ -63,12 +63,12 @@ class OrdersServer(executionContext: ExecutionContext,
           order <- ordersDao.getOrder(orderId)
           _ <- ordersCache.update(_.updated(orderId, order))
           _ <- producer.produce(ProducerRecord("orders", orderId), Serdes.StringSerde, Serdes.StringSerde)
-        } yield CreateOrderReply()
+        } yield CreateOrderReply() //().catchAll(ex => ZIO.fail(io.grpc.Status.INTERNAL))
       }
     }
 
     override  def getOrder(request: GetOrderRequest): scala.concurrent.Future[GetOrderReply] = 
-      LegacyRuntime.fromZIO{ordersDao.getOrder(request.orderId)}.map(Order.toReply) 
+      LegacyRuntime.fromZIO{ordersDao.getOrder(request.orderId)}.map(Order.toReply)  //.catchAll(ex => ZIO.fail(io.grpc.Status.INTERNAL))
   }
 
 }
@@ -79,6 +79,8 @@ object LegacyRuntime {
     Runtime.unsafeRunToFuture(body)
   }
 }
+
+
 
 
 

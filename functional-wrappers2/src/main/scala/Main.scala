@@ -75,6 +75,10 @@ object Main extends App { //ServerMain
       _ = producerR.release
     } yield ()
   }
+
+  // override def port: Int = 50051
+  // override def services: ServiceList[zio.ZEnv] =
+  //   ServiceList.addM(server)
 }
 
 object Runtime extends BootstrapRuntime
