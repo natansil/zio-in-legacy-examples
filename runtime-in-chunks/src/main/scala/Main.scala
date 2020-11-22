@@ -1,5 +1,7 @@
 package runtime.in.chunks
 
+import java.util.logging.Logger
+
 import scala.collection.mutable.ListBuffer
 import scala.concurrent.Await
 import scala.concurrent.ExecutionContext
@@ -22,15 +24,15 @@ import com.wixpress.dst.greyhound.future.GreyhoundConsumer._
 import com.wixpress.dst.greyhound.future.GreyhoundProducerBuilder
 import com.wixpress.dst.greyhound.future._
 import zio.BootstrapRuntime
+import zio.RIO
 import zio.Task
 import zio.UIO
 import zio.URIO
-import zio.RIO
+import zio.ZEnv
+import zio.ZIO
 import zio.console
 import zio.console._
 import zio.{Promise => ZPromise}
-
-import java.util.logging.Logger
 
 object Main extends App {
   val kafkaPort = 9092
@@ -41,14 +43,14 @@ object Main extends App {
   val consumersBuilder = Consumer.consumerBuilderWith(greyhoundConfig, new RecordHandler[String, String] {
     override def handle(record: ConsumerRecord[String, String])(implicit ec: ExecutionContext): Future[Any] =
       new CustomHandler().handle(record) //ZCustom snippet
-  })  
-  
+  })
+
   val _server = for {
-    consumer <- consumersBuilder.build
-    _ = println(">>>> consumer started")
-    producer <- GreyhoundProducerBuilder(greyhoundConfig).build
-    server = new OrdersServer(ec ,producer, InMemoryOrdersDao)
-  } yield server
+        consumer <- consumersBuilder.build
+        _ = println(">>>> consumer started")
+        producer <- GreyhoundProducerBuilder(greyhoundConfig).build
+        server = new OrdersServer(ec ,producer, InMemoryOrdersDao)
+      } yield server  
 
   val server = Await.result(_server, 10.seconds)
   server.start()
@@ -58,6 +60,10 @@ object Main extends App {
 object Runtime extends BootstrapRuntime
 
 
+
+
 //// ZIO stuff ////
-// ordersRef <- zio.Ref.make[Map[String, Order]](Map.empty)
-// runtime <- ZIO.runtime[ZEnv]
+  // Runtime.unsafeRun {
+  //   for {
+//        ordersRef <- zio.Ref.make[Map[String, Order]](Map.empty)
+//        runtime <- ZIO.runtime[ZEnv]

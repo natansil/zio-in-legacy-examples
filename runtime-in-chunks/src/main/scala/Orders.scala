@@ -18,7 +18,7 @@ import zio.ZIO
 
 class OrdersServer(executionContext: ExecutionContext, 
                    producer: GreyhoundProducer,
-                   ordersDao: OrdersDao
+                   ordersDao: OrdersDao              // ordersCache:  zio.Ref[Map[String, Order]]
                    ) { self =>
   private[this] var server: Server = null
   private val port = 50051
@@ -71,3 +71,8 @@ object LegacyRuntime {
     Runtime.unsafeRunToFuture(body)
   }
 }
+
+
+
+        // order <- ZIO.fromFuture{_ => ordersDao.getOrder(orderId) }
+        // _ <- ordersCache.update(_.updated(orderId, order))
