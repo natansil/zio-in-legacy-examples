@@ -54,7 +54,7 @@ class OrdersServer(executionContext: ExecutionContext,
     }
   }
 
-  private class OrdersImpl extends OrdersGrpc.Orders {
+  private class OrdersImpl extends OrdersGrpc.Orders {  // ZOrders[Blocking, Any]
     implicit val _executionContext = executionContext
     override def createOrder(req: CreateOrderRequest) = {
       LegacyRuntime.fromZIO {
