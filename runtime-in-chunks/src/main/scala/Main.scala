@@ -40,6 +40,7 @@ object Main extends App {
 
   implicit val ec = ExecutionContext.global
 
+  // Runtime.unsafeRun {
   val consumersBuilder = Consumer.consumerBuilderWith(greyhoundConfig, new RecordHandler[String, String] {
     override def handle(record: ConsumerRecord[String, String])(implicit ec: ExecutionContext): Future[Any] =
       new CustomHandler().handle(record) //ZCustom snippet
