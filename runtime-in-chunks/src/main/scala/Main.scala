@@ -40,7 +40,6 @@ object Main extends App {
 
   implicit val ec = ExecutionContext.global
 
-  // Runtime.unsafeRun {
   val consumersBuilder = Consumer.consumerBuilderWith(greyhoundConfig, new RecordHandler[String, String] {
     override def handle(record: ConsumerRecord[String, String])(implicit ec: ExecutionContext): Future[Any] =
       new CustomHandler().handle(record) //ZCustom snippet
@@ -59,11 +58,7 @@ object Main extends App {
 }
 
 object Runtime extends BootstrapRuntime
-
-
-
-
-//// ZIO stuff ////
+//// ZIO stuff - pass Ref ////
   // Runtime.unsafeRun {
   //   for {
 //        ordersRef <- zio.Ref.make[Map[String, Order]](Map.empty)
