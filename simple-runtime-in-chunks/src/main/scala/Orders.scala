@@ -4,7 +4,6 @@ import com.example.orders.OrdersGrpc._
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext
 
-
 import io.grpc.{Server, ServerBuilder}
 import io.grpc.protobuf.services.ProtoReflectionService
 import com.example.orders.{OrdersGrpc, CreateOrderRequest, CreateOrderReply, GetOrderRequest, GetOrderReply}
@@ -12,10 +11,12 @@ import com.example.orders.{OrdersGrpc, CreateOrderRequest, CreateOrderReply, Get
 import scala.concurrent.{ExecutionContext, Future}
 import zio.Task
 import zio.ZIO
+import zio.UIO
 
-class OrdersServer(executionContext: ExecutionContext, 
-                   ordersDao: OrdersDao              // ordersCache:  zio.Ref[Map[String, Order]]
-                   ) { self =>
+class OrdersServer(
+  executionContext: ExecutionContext,
+  ordersDao: OrdersDao // ordersCache:  ZOrdersCache
+) { self =>
   private[this] var server: Server = null
   private val port = 50051
 
@@ -30,7 +31,6 @@ class OrdersServer(executionContext: ExecutionContext,
       System.err.println("*** server shut down")
     }
   }
-
 
   def stop(): Unit = {
     if (server != null) {
@@ -67,7 +67,12 @@ object LegacyRuntime {
   }
 }
 
+// order <- ZIO.fromFuture{_ => ordersDao.getOrder(orderId) }
+// _ <- ordersCache.setOrder(order)
 
 
-        // order <- ZIO.fromFuture{_ => ordersDao.getOrder(orderId) }
-        // _ <- ordersCache.update(_.updated(orderId, order))
+// for {
+//   maybeOrder <- ordersCache.getOrder(request.orderId)
+//   order <- maybeOrder.fold(ZIO.fromFuture { _ => ordersDao.getOrder(request.orderId)})(
+//     UIO(println(">>>> found in cache!!! no need to request from DB :)")) *> Task(_))
+// } yield Order.toReply(order)

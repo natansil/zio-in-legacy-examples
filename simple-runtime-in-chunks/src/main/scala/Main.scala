@@ -7,11 +7,11 @@ import scala.concurrent.Await
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 import scala.concurrent.Promise
-import scala.concurrent.duration._
 import scala.util.Random
 
 import zio.BootstrapRuntime
 import zio.RIO
+import zio.Schedule
 import zio.Task
 import zio.UIO
 import zio.URIO
@@ -19,6 +19,7 @@ import zio.ZEnv
 import zio.ZIO
 import zio.console
 import zio.console._
+import zio.duration._
 import zio.{Promise => ZPromise}
 
 object Main extends App {
@@ -32,7 +33,7 @@ object Main extends App {
 
 object Runtime extends BootstrapRuntime
 //// ZIO stuff - pass Ref ////
-  // Runtime.unsafeRun {
+  // Runtime.unsafeRun{
   //   for {
-//        ordersRef <- zio.Ref.make[Map[String, Order]](Map.empty)
-//        runtime <- ZIO.runtime[ZEnv]
+  //     cache <- ZOrdersCacheImpl.make()
+  //     _ <- cache.cleanup().repeat(Schedule.spaced(1.second)).fork
