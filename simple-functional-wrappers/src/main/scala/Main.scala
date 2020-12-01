@@ -31,7 +31,7 @@ object Main extends App {
     for {
       cache <- ZOrdersCacheImpl.make()
       _ <- cache.cleanup().repeat(Schedule.spaced(1.second)).fork
-      server = new OrdersServer(ec, InMemoryOrdersDao, cache)
+      server = new OrdersServer(ec, InMemoryOrdersDao, cache) // ZInMemoryOrdersDao
       _ <- ZIO.effect(server.start())
       _ <- effectBlocking(server.blockUntilShutdown())
     } yield ()
