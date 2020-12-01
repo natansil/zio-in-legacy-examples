@@ -50,7 +50,7 @@ class OrdersServer(
       //zCreateOrder snippet
       for {
         orderId <- ordersDao.createOrder(req)
-      } yield CreateOrderReply()
+      } yield CreateOrderReply(orderId)
     }
 
     override  def getOrder(request: GetOrderRequest): scala.concurrent.Future[GetOrderReply] = 
