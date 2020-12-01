@@ -32,7 +32,6 @@ object Main extends App {
 }
 
 object Runtime extends BootstrapRuntime
-//// ZIO stuff - pass Ref ////
   // Runtime.unsafeRun{
   //   for {
   //     cache <- ZOrdersCacheImpl.make()
