@@ -71,8 +71,10 @@ object LegacyRuntime {
 // _ <- ordersCache.setOrder(order)
 
 
-// for {
-//   maybeOrder <- ordersCache.getOrder(request.orderId)
-//   order <- maybeOrder.fold(ZIO.fromFuture { _ => ordersDao.getOrder(request.orderId)})(
-//     UIO(println(">>>> found in cache!!! no need to request from DB :)")) *> Task(_))
-// } yield Order.toReply(order)
+// LegacyRuntime.fromTask {
+//   for {
+//     maybeOrder <- ordersCache.getOrder(request.orderId)
+//     order <- maybeOrder.fold(ZIO.fromFuture { _ => ordersDao.getOrder(request.orderId)})(
+//       UIO(println(">>>> found in cache!!! no need to request from DB :)")) *> Task(_))
+//   } yield Order.toReply(order)
+// }

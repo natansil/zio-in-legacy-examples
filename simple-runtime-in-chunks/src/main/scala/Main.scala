@@ -26,13 +26,11 @@ object Main extends App {
 
   implicit val ec = ExecutionContext.global
 
+  //ZOrderCache snippet
+
   val server = new OrdersServer(ec, InMemoryOrdersDao) 
   server.start()
   server.blockUntilShutdown()
 }
 
 object Runtime extends BootstrapRuntime
-  // Runtime.unsafeRun{
-  //   for {
-  //     cache <- ZOrdersCacheImpl.make()
-  //     _ <- cache.cleanup().repeat(Schedule.spaced(1.second)).fork
