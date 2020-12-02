@@ -11,8 +11,10 @@ trait OrdersDao {
 object InMemoryOrdersDao extends OrdersDao {
   val orders = mutable.Map.empty[String, Order] 
 
-  override def getOrder(orderId: String): Future[Order] = 
+  override def getOrder(orderId: String): Future[Order] = {
+    println(s">>>> retrieving order $orderId from DB.")
     orders.get(orderId).map(Future.successful).getOrElse(Future.failed(new RuntimeException("missing order")))
+  }
 
   override def createOrder(req: CreateOrderRequest): Future[String] = {
     val orderId = java.util.UUID.randomUUID.toString
